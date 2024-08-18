@@ -1,0 +1,24 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "NIH data for UI"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - VERAS.qmd
+      - Expenditures.qmd
+      - API.qmd
+      
+     
+
+format:
+  html:
+    theme: spacelab
+    css: styles.css
+    toc: true
+
+
+

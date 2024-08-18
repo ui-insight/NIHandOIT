@@ -1,0 +1,22 @@
+---
+title: "The UI Data Model for NIH"
+jupyter: python3
+---
+
+I have no idea what I'm doing.  Yay!
+
+Here is the [new policy](https://grants.nih.gov/grants/guide/notice-files/NOT-OD-24-157.html) related to accessing human genomic data.
+
+To access these data, NIH has an application process described [here](https://sharing.nih.gov/accessing-data/accessing-genomic-data/how-to-request-and-access-datasets-from-dbgap).
+
+This text 
+
+**Step 3: Signing Official Reviews, Approves, and Co-signs Request**
+
+'Once a data access request is submitted in dbGaP, it is automatically routed to the investigator's institutional Signing Official (SO) for review, approval, and co-signature.'
+
+suggests that UI would have a list of approved individuals.
+
+
+
+

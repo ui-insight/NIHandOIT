@@ -1,0 +1,99 @@
+---
+title: "The NIH API data"
+---
+
+Let's download the data for UI from the API.
+
+here is the link to the [instructions](https://api.reporter.nih.gov/documents/Sample%20RePORTER%20API%20Request%20Matching%20ExPORTER%20Project%20Files.pdf).
+
+
+```{python}
+import requests
+import json
+from datetime import datetime
+
+# Define the current year and calculate the starting fiscal year (5 years ago)
+current_year = datetime.now().year
+start_fiscal_year = current_year - 5
+
+# Define the API URL and endpoint
+url = "https://api.reporter.nih.gov/v2/projects/search"
+
+# Define the API request payload
+payload = {
+    "criteria": {
+        "org_names": ["UNIVERSITY OF IDAHO"],  # Filter for the University of Idaho
+        "fiscal_years": list(range(start_fiscal_year, current_year + 1)),  # Last 5 years
+        "newly_added_projects_only": False  # Include all projects, not just newly added ones
+    },
+    "include_fields": [
+        "ApplId", "SubprojectId", "FiscalYear", "ProjectNum", "ProjectSerialNum",
+        "Organization", "OrganizationType", "AwardType", "ActivityCode", "AwardAmount",
+        "ProjectNumSplit", "PrincipalInvestigators", "ProgramOfficers", "AgencyIcAdmin",
+        "AgencyIcFundings", "CongDist", "ProjectStartDate", "ProjectEndDate", "FullFoa",
+        "FullStudySection", "AwardNoticeDate", "CoreProjectNum", "PrefTerms", "ProjectTitle",
+        "PhrText", "SpendingCategoriesDesc", "ArraFunded", "BudgetStart", "BudgetEnd",
+        "CfdaCode", "FundingMechanism", "DirectCostAmt", "IndirectCostAmt"
+    ],
+    "offset": 0,  # Start from the first record
+    "limit": 500,  # Number of records to fetch per request, can be adjusted
+    "sort_field": "project_start_date",
+    "sort_order": "desc"
+}
+
+# Make the API request
+response = requests.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+
+# Check for a successful response
+if response.status_code == 200:
+    data = response.json()  # Parse the JSON response
+    with open('university_of_idaho_awards_last_5_years.json', 'w') as f:
+        json.dump(data, f, indent=4)
+    print("Data successfully downloaded and saved to 'university_of_idaho_awards_last_5_years.json'")
+else:
+    print(f"Failed to retrieve data: {response.status_code} - {response.text}")
+
+
+```
+
+
+```{python}
+import json
+import pandas as pd
+
+# Load the JSON data from the file
+with open('university_of_idaho_awards_last_5_years.json', 'r') as f:
+    data = json.load(f)
+
+# Extract relevant fields and create a list of dictionaries
+awards_data = []
+for project in data.get('results', []):
+    org_name = project.get('organization', {}).get('org_name', '')
+    project_num = project.get('project_num', '')
+    
+    # Principal Investigators (concatenating names if more than one PI)
+    principal_investigators = ", ".join(
+        [pi.get('full_name', '') for pi in project.get('principal_investigators', [])]
+    )
+    
+    direct_cost_amt = project.get('direct_cost_amt', 0)
+    
+    awards_data.append({
+        "Organization": org_name,
+        "ProjectNum": project_num,
+        "PrincipalInvestigators": principal_investigators,
+        "DirectCostAmt": direct_cost_amt
+    })
+
+# Create a DataFrame
+df = pd.DataFrame(awards_data)
+
+# Display the DataFrame
+print(df)
+
+# Optionally, save the DataFrame to a CSV file
+df.to_csv('awards_summary.csv', index=False)
+
+
+
+```
