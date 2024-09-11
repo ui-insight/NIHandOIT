@@ -5,5 +5,33 @@
     "title": "VERAS Data",
     "section": "",
     "text": "This is where the VERAS data will go."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "The UI Data Model for NIH",
+    "section": "",
+    "text": "I have no idea what I’m doing. Yay!\nHere is the new policy related to accessing human genomic data.\nTo access these data, NIH has an application process described here.\nThis text\nStep 3: Signing Official Reviews, Approves, and Co-signs Request\n‘Once a data access request is submitted in dbGaP, it is automatically routed to the investigator’s institutional Signing Official (SO) for review, approval, and co-signature.’\nsuggests that UI would have a list of approved individuals."
+  },
+  {
+    "objectID": "Expenditures.html",
+    "href": "Expenditures.html",
+    "title": "Expenditures Data",
+    "section": "",
+    "text": "This is where arpans data will go."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "hahahaha\n\n1 + 1\n\n2"
+  },
+  {
+    "objectID": "API.html",
+    "href": "API.html",
+    "title": "The NIH API data",
+    "section": "",
+    "text": "Let’s download the data for UI from the API.\nhere is the link to the instructions.\n\nimport requests\nimport json\nfrom datetime import datetime\n\n# Define the current year and calculate the starting fiscal year (5 years ago)\ncurrent_year = datetime.now().year\nstart_fiscal_year = current_year - 5\n\n# Define the API URL and endpoint\nurl = \"https://api.reporter.nih.gov/v2/projects/search\"\n\n# Define the API request payload\npayload = {\n    \"criteria\": {\n        \"org_names\": [\"UNIVERSITY OF IDAHO\"],  # Filter for the University of Idaho\n        \"fiscal_years\": list(range(start_fiscal_year, current_year + 1)),  # Last 5 years\n        \"newly_added_projects_only\": False  # Include all projects, not just newly added ones\n    },\n    \"include_fields\": [\n        \"ApplId\", \"SubprojectId\", \"FiscalYear\", \"ProjectNum\", \"ProjectSerialNum\",\n        \"Organization\", \"OrganizationType\", \"AwardType\", \"ActivityCode\", \"AwardAmount\",\n        \"ProjectNumSplit\", \"PrincipalInvestigators\", \"ProgramOfficers\", \"AgencyIcAdmin\",\n        \"AgencyIcFundings\", \"CongDist\", \"ProjectStartDate\", \"ProjectEndDate\", \"FullFoa\",\n        \"FullStudySection\", \"AwardNoticeDate\", \"CoreProjectNum\", \"PrefTerms\", \"ProjectTitle\",\n        \"PhrText\", \"SpendingCategoriesDesc\", \"ArraFunded\", \"BudgetStart\", \"BudgetEnd\",\n        \"CfdaCode\", \"FundingMechanism\", \"DirectCostAmt\", \"IndirectCostAmt\"\n    ],\n    \"offset\": 0,  # Start from the first record\n    \"limit\": 500,  # Number of records to fetch per request, can be adjusted\n    \"sort_field\": \"project_start_date\",\n    \"sort_order\": \"desc\"\n}\n\n# Make the API request\nresponse = requests.post(url, headers={\"Content-Type\": \"application/json\"}, data=json.dumps(payload))\n\n# Check for a successful response\nif response.status_code == 200:\n    data = response.json()  # Parse the JSON response\n    with open('university_of_idaho_awards_last_5_years.json', 'w') as f:\n        json.dump(data, f, indent=4)\n    print(\"Data successfully downloaded and saved to 'university_of_idaho_awards_last_5_years.json'\")\nelse:\n    print(f\"Failed to retrieve data: {response.status_code} - {response.text}\")\n\nData successfully downloaded and saved to 'university_of_idaho_awards_last_5_years.json'\n\n\n\nimport json\nimport pandas as pd\n\n# Load the JSON data from the file\nwith open('university_of_idaho_awards_last_5_years.json', 'r') as f:\n    data = json.load(f)\n\n# Extract relevant fields and create a list of dictionaries\nawards_data = []\nfor project in data.get('results', []):\n    org_name = project.get('organization', {}).get('org_name', '')\n    project_num = project.get('project_num', '')\n    \n    # Principal Investigators (concatenating names if more than one PI)\n    principal_investigators = \", \".join(\n        [pi.get('full_name', '') for pi in project.get('principal_investigators', [])]\n    )\n    \n    direct_cost_amt = project.get('direct_cost_amt', 0)\n    \n    awards_data.append({\n        \"Organization\": org_name,\n        \"ProjectNum\": project_num,\n        \"PrincipalInvestigators\": principal_investigators,\n        \"DirectCostAmt\": direct_cost_amt\n    })\n\n# Create a DataFrame\ndf = pd.DataFrame(awards_data)\n\n# Display the DataFrame\nprint(df)\n\n# Optionally, save the DataFrame to a CSV file\ndf.to_csv('awards_summary.csv', index=False)\n\n            Organization         ProjectNum            PrincipalInvestigators  \\\n0    UNIVERSITY OF IDAHO    1R16GM154706-01                       Ginny  Lane   \n1    UNIVERSITY OF IDAHO    1R25GM154336-01  Maitreya J Dunham, Paul A Rowley   \n2    UNIVERSITY OF IDAHO    1P20GM152304-01                 Janet E. Williams   \n3    UNIVERSITY OF IDAHO    1P20GM152304-01              MICHELLE Kay MCGUIRE   \n4    UNIVERSITY OF IDAHO    1P20GM152304-01                       Yimin  Chen   \n..                   ...                ...                               ...   \n145  UNIVERSITY OF IDAHO  2P20GM104420-06A1                    Craig R Miller   \n146  UNIVERSITY OF IDAHO  2P20GM104420-06A1                  Audrey Qiuyan Fu   \n147  UNIVERSITY OF IDAHO    5P20GM104420-05                     Tanya A Miura   \n148  UNIVERSITY OF IDAHO    2P20GM103408-19                 Mark Joseph Rudin   \n149  UNIVERSITY OF IDAHO    5P20GM103408-20                 Kenneth A Cornell   \n\n     DirectCostAmt  \n0           100000  \n1           258307  \n2           388362  \n3          1799999  \n4           112230  \n..             ...  \n145         510998  \n146         107951  \n147         233045  \n148         249462  \n149         140500  \n\n[150 rows x 4 columns]"
   }
 ]
